@@ -37,4 +37,19 @@ router.put("/", (req, res) => {
   );
 });
 
+// checking token
+router.post("/token", (req, res) => {
+  const { token } = req.body;
+
+  mysql.query(
+    "SELECT * FROM movie.tokens WHERE token=$1 and is_revoked=false",
+    [token],
+    (error, result) => {
+      if (result.rows.length > 0) {
+        res.send({ status: "success" });
+      }
+    }
+  );
+});
+
 module.exports = router;

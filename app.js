@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 
 const movie = require("./src/routes/movie");
 const auth = require("./src/routes/auth");
+const payment = require("./src/routes/payment");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use("/movie", movie);
 app.use("/auth", auth);
+app.use("/payment", payment);
 
 const port = process.env.APP_PORT;
 app.listen(port, () => {

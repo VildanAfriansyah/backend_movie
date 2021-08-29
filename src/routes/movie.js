@@ -2,7 +2,7 @@ require("dotenv").config();
 const router = require("express").Router();
 const mysql = require("../dbconfig");
 
-/* get listmovie */
+// list movie
 router.get("/list", (req, res) => {
   mysql.query(
     "SELECT * FROM movie.movie ORDER BY movie_id ASC",
