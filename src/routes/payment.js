@@ -17,8 +17,8 @@ router.get("/list", (req, res) => {
   );
 });
 
-// payment
-router.post("/", auth, (req, res) => {
+// payment movie
+router.post("/movie", auth, (req, res) => {
   const { token, movie_id, price, method_id, type, phone } = req.body;
   const decodedJwt = jwt.decode(token, { complete: true });
   const email = decodedJwt.payload.email;
@@ -36,6 +36,45 @@ router.post("/", auth, (req, res) => {
             res.send({ status: "success" });
           }
         );
+      }
+    }
+  );
+});
+
+// payment subscription
+router.post("/subscription", auth, (req, res) => {
+  const { token, duration, phone, method_id, price, type } = req.body;
+  const decodedJwt = jwt.decode(token, { complete: true });
+  const email = decodedJwt.payload.email;
+  const created_date = new Date();
+  const start_subscription = new Date();
+  const finish_subscription = new Date();
+
+  finish_subscription.setDate(
+    finish_subscription.getDate() + parseInt(duration)
+  );
+  mysql.query(
+    "INSERT INTO movie.transaction(email, price, start_subscription, end_subscription, created_date, phone_number, type, method_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+    [
+      email,
+      price,
+      start_subscription,
+      finish_subscription,
+      created_date,
+      phone,
+      type,
+      method_id,
+    ],
+    (error, result) => {
+      if (result.rowCount > 0) {
+        const queryString = {
+          text: `UPDATE movie.users
+            SET is_subscription=$2, start_subscription=$3, end_subscription=$4
+            WHERE email=$1`,
+          values: [email, 1, start_subscription, finish_subscription],
+        };
+        mysql.query(queryString, null);
+        res.send({ status: "success" });
       }
     }
   );

@@ -1,7 +1,7 @@
 require("dotenv").config();
 const router = require("express").Router();
 const jwt = require("jsonwebtoken");
-
+const { auth } = require("../middleware");
 const mysql = require("../dbconfig");
 
 // add email
@@ -47,6 +47,26 @@ router.post("/token", (req, res) => {
     (error, result) => {
       if (result.rows.length > 0) {
         res.send({ status: "success" });
+      }
+    }
+  );
+});
+
+// checking subscription
+router.post("/subscription", auth, (req, res) => {
+  const { token } = req.body;
+  const decodedJwt = jwt.decode(token, { complete: true });
+  const email = decodedJwt.payload.email;
+  const date = new Date();
+
+  mysql.query(
+    "SELECT * FROM movie.users WHERE email=$1",
+    [email],
+    (error, result) => {
+      if (result.rows[0].end_subscription >= date) {
+        res.send({ status: "success" });
+      } else {
+        res.send({ status: "invalid" });
       }
     }
   );
