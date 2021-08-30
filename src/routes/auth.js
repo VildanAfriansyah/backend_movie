@@ -72,4 +72,11 @@ router.post("/subscription", auth, (req, res) => {
   );
 });
 
+// checking movie
+router.post("/subscription", auth, (req, res) => {
+  const { token, movie_id } = req.body;
+  const decodedJwt = jwt.decode(token, { complete: true });
+  const email = decodedJwt.payload.email;
+});
+
 module.exports = router;
