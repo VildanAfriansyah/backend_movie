@@ -5,15 +5,20 @@ const { auth } = require("../middleware");
 const mysql = require("../dbconfig");
 
 // add email
-router.put("/", (req, res) => {
+router.post("/login", (req, res) => {
   const { email, name } = req.body;
   const token = jwt.sign({ email: email, name: name }, process.env.APP_KEY);
   mysql.query(
     "SELECT * FROM movie.users WHERE email=$1",
     [email],
     (error, result) => {
+      if (error) {
+        res.status(500).send({
+          status: error,
+        });
+      }
       if (result.rowCount == 1) {
-        res.send({
+        res.status(201).send({
           status: "success",
           token: token,
         });
@@ -22,6 +27,11 @@ router.put("/", (req, res) => {
           "INSERT INTO movie.users(email, name) VALUES ($1, $2)",
           [email, name],
           (error, result) => {
+            if (error) {
+              res.status(500).send({
+                status: error,
+              });
+            }
             res.send({
               status: "success",
               token: token,
@@ -63,8 +73,12 @@ router.post("/subscription", auth, (req, res) => {
     "SELECT * FROM movie.users WHERE email=$1",
     [email],
     (error, result) => {
-      if (result.rows[0].end_subscription >= date) {
-        res.send({ status: "success" });
+      if (result.rows.length > 0) {
+        if (result.rows[0].end_subscription >= date) {
+          res.send({ status: "success" });
+        } else {
+          res.send({ status: "invalid" });
+        }
       } else {
         res.send({ status: "invalid" });
       }
